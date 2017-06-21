@@ -2,6 +2,25 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :spyfall_server, SpyfallServer.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "spyfall_server_repo",
+  username: "user",
+  password: "pass",
+  hostname: "localhost"
+
+
+# General application configuration
+config :spyfall_server,
+  ecto_repos: [SpyfallServer.Repo]
+
+config :spyfall_server, SpyfallServer.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  database: "spyfall_server",
+  username: "postgres",
+  password: "postgres",
+  hostname: "localhost"
+
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,
