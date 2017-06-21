@@ -2,12 +2,11 @@ defmodule SpyfallServer.Server do
   use GenServer
 
   ### API ###
-  def connect_player() do
-    GenServer.call(__MODULE__, {:connect_player, })
-  end
 
   ### Server ###
   def start_link do
+    # Make it global...
+
     GenServer.start_link(__MODULE__, [], name: {:global, :spyfall_server})
   end
 
@@ -16,7 +15,9 @@ defmodule SpyfallServer.Server do
   end
 
   def handle_call({:create_room, room_name}, _from, state) do
-    GenServer.call(_from, {:room, :ok})
-  end
+    IO.puts "In server"
 
+    # Тук някаква проверка за _from
+    {:reply, :ok, state}
+  end
 end
