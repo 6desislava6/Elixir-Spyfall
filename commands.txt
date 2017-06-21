@@ -1,0 +1,2 @@
+iex --sname baba -S mix
+iex  --sname server --cookie spyfall -S mix

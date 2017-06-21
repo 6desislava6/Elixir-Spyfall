@@ -6,7 +6,8 @@ defmodule SpyfallServer.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-       supervisor(SpyfallServer.Repo, [])
+       supervisor(SpyfallServer.Repo, []),
+       worker(SpyfallServer.Server, [])
     ]
 
     opts = [strategy: :one_for_one, name: SpyfallServer.Supervisor]
