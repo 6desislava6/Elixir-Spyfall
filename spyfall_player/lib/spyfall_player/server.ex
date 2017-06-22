@@ -2,7 +2,7 @@ defmodule SpyfallPlayer.Server do
   use GenServer
 
   def create_room(room_name) do
-    case GenServer.call({:global, :spyfall_server, node()}, {:create_room, room_name}) do
+    case GenServer.call({:global, :spyfall_server}, {:create_room, room_name, node()}) do
       {:ok, message} -> IO.puts message
       {:error, message} -> IO.puts message
     end
@@ -19,6 +19,4 @@ defmodule SpyfallPlayer.Server do
   def handle_call({:room, :ok}, _from, state) do
     IO.puts "New room created"
   end
-
-
 end
