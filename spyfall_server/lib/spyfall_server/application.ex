@@ -7,7 +7,8 @@ defmodule SpyfallServer.Application do
 
     children = [
        supervisor(SpyfallServer.Repo, []),
-       worker(SpyfallServer.Server, [])
+       worker(SpyfallServer.Server, []),
+       supervisor(SpyfallServer.RoomSupervisor, [])
     ]
 
     opts = [strategy: :one_for_one, name: SpyfallServer.Supervisor]
