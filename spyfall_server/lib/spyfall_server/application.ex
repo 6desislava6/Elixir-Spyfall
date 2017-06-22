@@ -6,7 +6,6 @@ defmodule SpyfallServer.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-       supervisor(SpyfallServer.RoomSupervisor, []),
        supervisor(SpyfallServer.Repo, []),
        worker(SpyfallServer.Server, [])
     ]
