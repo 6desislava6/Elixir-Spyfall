@@ -1,6 +1,7 @@
 defmodule SpyfallServer.Server do
   use GenServer
   alias SpyfallServer.Room
+
   ### API ###
   def get_state() do
     :sys.get_state({:global, :spyfall_server})
@@ -10,8 +11,11 @@ defmodule SpyfallServer.Server do
     GenServer.call({:global, :spyfall_server}, {:get_room_state, room_name})
   end
 
-  ### Server ###
+  def broadcast_to_room(room_name, message) do
+    GenServer.call({:global, :spyfall_server}, {:broadcast_to_room, room_name, message})
+  end
 
+  ### Server ###
   def start_link do
     GenServer.start_link(__MODULE__, [], name: {:global, :spyfall_server})
   end
@@ -23,6 +27,13 @@ defmodule SpyfallServer.Server do
   def handle_call({:get_room_state, room_name}, _from,  %{ets_table: table}=state) do
     room_state = case :ets.lookup(table, room_name) do
       [{room_name, pid}] -> :sys.get_state(pid)
+    end
+    {:reply, room_state, state}
+  end
+
+  def handle_call({:broadcast_to_room, room_name, message}, _from,  %{ets_table: table}=state) do
+    room_state = case :ets.lookup(table, room_name) do
+      [{room_name, pid}] -> GenServer.call(pid, {:broadcast, message})
     end
     {:reply, room_state, state}
   end
@@ -42,6 +53,15 @@ defmodule SpyfallServer.Server do
     {:reply, result, state}
   end
 
+  def handle_cast({:delete_room, room_name}, state) do
+    :ets.delete(state.ets_table, room_name)
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, _ref, :process, _pid, _status}, state) do
+    {:noreply, state}
+  end
+
   # catch-all clause
   def handle_info(msg, state) do
     IO.puts msg
@@ -54,7 +74,7 @@ defmodule SpyfallServer.Server do
     case :ets.lookup(table, room_name) do
       [{room_name, pid}] -> {{:error, "Room already exists."}, state}
       [] ->
-        room_pid = create_room(node_name)
+        room_pid = create_room(node_name, room_name)
         :ets.insert(table, {room_name, room_pid}) |> IO.puts
         {{:ok, "Room created"}, state}
     end
@@ -64,8 +84,8 @@ defmodule SpyfallServer.Server do
     {{:error, "User is not connected."}, state}
   end
 
-  defp create_room(node_name) do
-    {:ok, room_pid} = GenServer.start(Room, node_name)
+  defp create_room(node_name, room_name) do
+    {:ok, room_pid} = GenServer.start(Room, [room_name, node_name])
     Process.monitor(room_pid)
     room_pid
   end

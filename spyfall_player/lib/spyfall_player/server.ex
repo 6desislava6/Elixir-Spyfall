@@ -19,6 +19,11 @@ defmodule SpyfallPlayer.Server do
     {:ok, %{}}
   end
 
+  def handle_cast({:broadcast, message}, state) do
+    IO.puts message
+    {:noreply, state}
+  end
+
   # catch-all clause
   def handle_info(msg, state) do
     IO.puts msg

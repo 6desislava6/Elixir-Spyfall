@@ -12,7 +12,8 @@ defmodule SpyfallPlayer do
       :world
 
   """
-  def hello do
-    :world
+  def create_room do
+    IO.puts "Pick a name for your room: "
+    SpyfallPlayer.Server
   end
 end
