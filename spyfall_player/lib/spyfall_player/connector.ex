@@ -12,6 +12,8 @@ defmodule SpyfallPlayer.Connector do
 
   def handle_info({:nodedown, server}, state) do
     main_server = Application.get_env(:spyfall_player, :name)
+
+    IO.puts "Game stopped!"
     case server do
       ^main_server ->
         IO.puts "Server has disconnected."

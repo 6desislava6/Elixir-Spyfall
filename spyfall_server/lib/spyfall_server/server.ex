@@ -2,7 +2,7 @@ defmodule SpyfallServer.Server do
   use GenServer
   alias SpyfallServer.Room
 
-  ### API ###
+  ### Api ###
   def get_state() do
     :sys.get_state({:global, :spyfall_server})
   end
@@ -15,7 +15,7 @@ defmodule SpyfallServer.Server do
     GenServer.call({:global, :spyfall_server}, {:broadcast_to_room, room_name, message})
   end
 
-  ### Server ###
+  ### Calbacks ###
   def start_link do
     GenServer.start_link(__MODULE__, [], name: {:global, :spyfall_server})
   end
@@ -76,7 +76,7 @@ defmodule SpyfallServer.Server do
       [{room_name, pid}] -> {{:error, "Room already exists."}, state}
       [] ->
         room_pid = create_room(node_name, room_name)
-        :ets.insert(table, {room_name, room_pid}) |> IO.puts
+        :ets.insert(table, {room_name, room_pid})
         {{:ok, "Room created", room_pid}, state}
     end
   end

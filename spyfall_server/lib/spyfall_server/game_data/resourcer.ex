@@ -1,5 +1,6 @@
 defmodule SpyfallServer.Resourcer do
   import Ecto.Query, only: [from: 2]
+  alias SpyfallServer.Resourcer
 
   def get_locations do
     query = from location in SpyfallServer.Location,
@@ -24,6 +25,14 @@ defmodule SpyfallServer.Resourcer do
     from(a in SpyfallServer.Actor, select: a)
     |> SpyfallServer.Repo.all
     |> Enum.each(fn record -> SpyfallServer.Repo.delete(record) end)
+  end
+
+  def get_roles_location(size) do
+    :random.seed(:erlang.now)
+    locations = Resourcer.get_locations
+    location_id = Enum.random(0..(length(locations) - 1))
+    IO.puts location_id
+    {Enum.at(locations, location_id), get_actors_for_location(location_id) |> Enum.take_random(size)}
   end
 end
 
