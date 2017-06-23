@@ -3,6 +3,10 @@ defmodule SpyfallServer.Server do
   alias SpyfallServer.Room
 
   ### Api ###
+  def get_all_rooms do
+    GenServer.call({:global, :spyfall_server}, :get_all_rooms)
+  end
+
   def get_state() do
     :sys.get_state({:global, :spyfall_server})
   end
@@ -22,6 +26,11 @@ defmodule SpyfallServer.Server do
 
   def init(_) do
     {:ok, %{:ets_table => :ets.new(:spyfall_games, [:set, :private])}}
+  end
+
+  def handle_call(:get_all_rooms, _, state) do
+    # TODO - see how to match all
+    {:reply, :ets.lookup(state.ets_table, {}) , state}
   end
 
   def handle_call({:get_room_state, room_name}, _from,  %{ets_table: table}=state) do
@@ -89,5 +98,10 @@ defmodule SpyfallServer.Server do
     {:ok, room_pid} = GenServer.start(Room, [room_name, node_name])
     Process.monitor(room_pid)
     room_pid
+  end
+
+  def terminate(reason, state) do
+    # TODO - да се мине по :ets и да се убият всички стаи
+    :ok
   end
 end

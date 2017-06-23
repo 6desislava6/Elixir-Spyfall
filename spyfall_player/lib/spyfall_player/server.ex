@@ -77,6 +77,11 @@ defmodule SpyfallPlayer.Server do
     {:noreply, state}
   end
 
+  def handle_cast(:ruined, state) do
+    send(state.game_pid, :ruined)
+    {:noreply, state}
+  end
+
   def handle_cast({:player_ready, game_pid}, state) do
     IO.inspect game_pid
     GenServer.cast(state.room_pid, {:player_ready, node(), state.room_pid})

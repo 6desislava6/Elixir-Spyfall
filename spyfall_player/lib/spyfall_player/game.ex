@@ -40,8 +40,9 @@ defmodule Game do
     IO.puts "Waiting timesup"
     receive do
       :timesUp -> :ok
+      :ruined -> System.halt(0)
     after
-      600 ->
+      1000 ->
         answers_questions()
         main_game()
     end

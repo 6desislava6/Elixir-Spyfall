@@ -47,7 +47,7 @@ defmodule SpyfallServer.Room do
         {location, roles} = SpyfallServer.Resourcer.get_roles_location(length(state.users))
         {spy_id, roles} = assign_spy_role(roles)
         state = Map.put(state, :spy, Enum.at(state.users, spy_id))
-        notify_users_individual(state.users, {:all_ready, location}, roles)
+        notify_users_individual(state.users, {:all_ready, location, spy_id}, roles)
       false -> :ok
     end
     {:noreply, Map.put(state, :ready_players, ready_players)}
@@ -85,13 +85,12 @@ defmodule SpyfallServer.Room do
   def handle_info({:nodedown, node_name}, %{:users => users, :room_name => room_name}=state) do
     state = Map.put(state, :users, List.delete(users, node_name))
     broadcast_users(state.users, "#{node_name} has disconnected")
-    case length(state.users) do
-      0 -> {:stop, :shutdown, state}
-      _ -> {:noreply, state}
-    end
+    {:stop, :shutdown, state}
   end
 
   def terminate(reason, state) do
+    broadcast_users(state.users, "Game ruined!")
+    notify_users(state.users, :ruined)
     GenServer.cast({:global, :spyfall_server}, {:delete_room, state.room_name})
     :ok
   end
@@ -119,9 +118,13 @@ defmodule SpyfallServer.Room do
     end)
   end
 
-  defp notify_users_individual(users, signal, roles) do
+  defp notify_users_individual(users, {:all_ready, location, spy_id}, roles) do
     Enum.with_index(users) |> Enum.each(fn {user, index} ->
-      Node.spawn(user, GenServer, :cast, [SpyfallPlayer.Server, {signal, Enum.at(roles, index)}])
+      new_location = case index do
+        ^spy_id -> "~Unknown~"
+        _ -> location
+      end
+      Node.spawn(user, GenServer, :cast, [SpyfallPlayer.Server, {{:all_ready, new_location}, Enum.at(roles, index)}])
     end)
   end
 
@@ -132,7 +135,7 @@ defmodule SpyfallServer.Room do
   end
 
   defp set_timer(room_pid) do
-    :timer.apply_after(3000, GenServer, :cast, [room_pid, :timesUp])
+    :timer.apply_after(3 * 60 * 1000, GenServer, :cast, [room_pid, :timesUp])
   end
 
   defp assign_spy_role(roles) do
