@@ -1,5 +1,6 @@
 defmodule SpyfallServer.Room do
   use GenServer
+  alias SpyfallServer.Room
 
   def broadcast(message) do
     GenServer.call(__MODULE__, {:broadcast, message})
@@ -13,14 +14,28 @@ defmodule SpyfallServer.Room do
     GenServer.start_link(__MODULE__,  [room_name, node_name], [])
   end
 
+  def start_game() do
+    Room.broadcast()
+  end
+
   def init([room_name, node_name]) do
     Node.monitor(node_name, true)
-    {:ok, %{:owner => node_name, :users => [node_name], :room_name => room_name}}
+    {:ok, %{:owner => node_name, :users => [node_name], :room_name => room_name, :pid => self()}}
+  end
+
+  def handle_cast({:ask_player, from_player, to_player, question}, %{:users => users}=state) do
+    broadcast_users(users, "#{from_player} asks #{to_player}: #{question}")
+    # Node.spawn(to_player, GenServer, :cast, [SpyfallPlayer.Server, :answer])
+    {:noreply, state}
   end
 
   def handle_call({:join_room, node_name}, _from, state) do
     Node.monitor(node_name, true)
-    {:reply, :ok, Map.put(state, :users, Map.get(state, :users) ++ [node_name])}
+    users = case Enum.member?(Map.get(state, :users), node_name) do
+      true -> Map.get(state, :users)
+      false -> Map.get(state, :users) ++ [node_name]
+    end
+    {:reply, :ok, Map.put(state, :users, users)}
   end
 
   def handle_call({:broadcast, message}, _from, %{:users => users}=state) do

@@ -7,6 +7,7 @@ defmodule SpyfallPlayer.Application do
     children = [
       worker(SpyfallPlayer.Server, []),
       worker(SpyfallPlayer.Connector, []),
+      supervisor(Task.Supervisor, [[name: SpyfallPlayer.TaskSupervisor]])
     ]
     opts = [strategy: :one_for_one, name: SpyfallPlayer.Supervisor]
     Supervisor.start_link(children, opts)

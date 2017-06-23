@@ -27,6 +27,7 @@ defmodule SpyfallServer.Server do
   def handle_call({:get_room_state, room_name}, _from,  %{ets_table: table}=state) do
     room_state = case :ets.lookup(table, room_name) do
       [{room_name, pid}] -> :sys.get_state(pid)
+      [] -> IO.puts "No such room"
     end
     {:reply, room_state, state}
   end
@@ -47,7 +48,7 @@ defmodule SpyfallServer.Server do
     result = case :ets.lookup(table, room_name) do
       [{room_name, pid}] ->
         GenServer.call(pid, {:join_room, node_name})
-        {:ok, "Joined #{room_name} room."}
+        {:ok, "Joined #{room_name} room.", pid}
       [] -> {:error, "Room doesn't exist."}
     end
     {:reply, result, state}
@@ -76,7 +77,7 @@ defmodule SpyfallServer.Server do
       [] ->
         room_pid = create_room(node_name, room_name)
         :ets.insert(table, {room_name, room_pid}) |> IO.puts
-        {{:ok, "Room created"}, state}
+        {{:ok, "Room created", room_pid}, state}
     end
   end
 
