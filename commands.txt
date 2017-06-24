@@ -1,3 +1,8 @@
 iex --sname baba -S mix
 iex --sname haha -S mix
+iex --sname dezi -S mix
 iex  --sname server --cookie spyfall -S mix
+
+iex  --sname server --cookie spyfall --erl "-config config/server" -S mix
+
+iex --sname server --cookie spyfall -pa "_build/dev/lib/spyfall_server/ebin/"" --app spyfall_player --erl “-config config/server"
