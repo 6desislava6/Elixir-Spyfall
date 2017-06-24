@@ -47,7 +47,7 @@ defmodule SpyfallServer.Room do
         {location, roles} = SpyfallServer.Resourcer.get_roles_location(length(state.users))
         {spy_id, roles} = assign_spy_role(roles)
         state = Map.put(state, :spy, Enum.at(state.users, spy_id))
-        notify_users_individual(state.users, {:all_ready, location, spy_id}, roles)
+        give_roles_locations(state.users, {:all_ready, location, spy_id}, roles)
       false -> :ok
     end
     {:noreply, Map.put(state, :ready_players, ready_players)}
@@ -77,11 +77,6 @@ defmodule SpyfallServer.Room do
     {:reply, {:ok, "Broadcast to all..."}, state}
   end
 
-  def handle_call({:broadcast, message, users}, _, state) do
-    broadcast_users(users, message)
-    {:reply, {:ok, "Broadcast to all..."}, state}
-  end
-
   def handle_info({:nodedown, node_name}, %{:users => users, :room_name => room_name}=state) do
     state = Map.put(state, :users, List.delete(users, node_name))
     broadcast_users(state.users, "#{node_name} has disconnected")
@@ -102,7 +97,6 @@ defmodule SpyfallServer.Room do
   end
 
   def handle_info(msg, state) do
-    IO.puts msg
     IO.puts "Unknown message."
     {:noreply, state}
   end
@@ -118,7 +112,7 @@ defmodule SpyfallServer.Room do
     end)
   end
 
-  defp notify_users_individual(users, {:all_ready, location, spy_id}, roles) do
+  defp give_roles_locations(users, {:all_ready, location, spy_id}, roles) do
     Enum.with_index(users) |> Enum.each(fn {user, index} ->
       new_location = case index do
         ^spy_id -> "~Unknown~"

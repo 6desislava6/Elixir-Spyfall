@@ -36,7 +36,7 @@ defmodule SpyfallServer.Server do
   def handle_call({:get_room_state, room_name}, _from,  %{ets_table: table}=state) do
     room_state = case :ets.lookup(table, room_name) do
       [{room_name, pid}] -> :sys.get_state(pid)
-      [] -> IO.puts "No such room"
+      [] -> {:error, "No such room"}
     end
     {:reply, room_state, state}
   end
@@ -90,8 +90,11 @@ defmodule SpyfallServer.Server do
     end
   end
 
-  defp add_room(false, _, _, state) do
-    {{:error, "User is not connected."}, state}
+  defp add_room(false, room_name, node_name, state) do
+    case node() do
+      node_name -> add_room(true, room_name, node_name, state)
+      _ -> {{:error, "User is not connected."}, state}
+    end
   end
 
   defp create_room(node_name, room_name) do

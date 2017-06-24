@@ -2,14 +2,6 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :spyfall_server, SpyfallServer.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  database: "spyfall_server_repo",
-  username: "user",
-  password: "pass",
-  hostname: "localhost"
-
-
 # General application configuration
 config :spyfall_server,
   ecto_repos: [SpyfallServer.Repo]

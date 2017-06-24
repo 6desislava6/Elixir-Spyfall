@@ -228,6 +228,5 @@ locations = [["first class passenger",
 ]]
 
 Enum.with_index(locations) |> Enum.each(fn {actors, location_id} ->
-  IO.puts location_id + 1
   Enum.each(actors, fn actor -> Repo.insert! %Actor{name: actor, location_id: (location_id + 1)} end)
 end)
